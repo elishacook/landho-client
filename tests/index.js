@@ -27,7 +27,7 @@ api
         
         add: function (params, done)
         {
-            done(null, params.a + params.b)
+            done(null, params.data.a + params.data.b)
         },
         
         counter: function (params)
