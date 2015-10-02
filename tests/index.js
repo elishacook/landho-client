@@ -6,18 +6,14 @@ global.expect = chai.expect
 
 var PORT = 5151,
     URL = 'http://0.0.0.0:'+PORT,
-    OPTIONS = {
-        transports: ['websocket'],
-        'force new connection': true
-    },
-    io = require('socket.io').listen(PORT),
-    io_client = require('socket.io-client'),
+    ws = require('ws'),
+    wss = new ws.Server({ port: PORT }),
     landho = require('landho'),
     landho_client = require('../lib'),
     api = landho()
     
 api
-    .configure(landho.socket(io))
+    .configure(landho.socket(wss))
     .service('calc',
     {
         wrong: function (params, done)
@@ -54,8 +50,8 @@ api
     
 var get_client = function (done)
 {
-    var socket = io_client.connect(URL, OPTIONS)
-    socket.on('connect', function ()
+    var socket = new ws(URL)
+    socket.on('open', function ()
     {
         done(landho_client(socket))
     })
@@ -67,8 +63,7 @@ describe('Client', function ()
     {
         get_client(function (client)
         {
-            var calc = client.service('calc')
-            calc('add', { a: 4, b: 3 }, function (err, result, feed)
+            client('calc add', { a: 4, b: 3 }, function (err, result, feed)
             {
                 expect(err).to.be.null
                 expect(result).to.equal(7)
@@ -81,8 +76,7 @@ describe('Client', function ()
     {
         get_client(function (client)
         {
-            var calc = client.service('calc')
-            calc('counter', {}, function (err, initial, feed)
+            client('calc counter', {}, function (err, initial, feed)
             {
                 expect(err).to.be.null
                 expect(initial).to.equal(0)
@@ -109,8 +103,8 @@ describe('Client', function ()
                             {
                                 expect(expect_c).to.equal(orig_expect_c)
                                 done()
-                            }, 50)
-                        }, 50)
+                            }, 10)
+                        }, 10)
                     }
                 })
             })
