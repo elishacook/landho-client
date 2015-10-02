@@ -1,6 +1,6 @@
 {
   "name": "landho-client",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "lib/index.js",
   "description": "A socket.io client for landho services.",
   "scripts": {
@@ -15,7 +15,8 @@
   "author": "Elisha Fitch-Cook <elisha@elishacook.com.com>",
   "license": "MIT",
   "dependencies": {
-    "event-emitter": "^0.3.4"
+    "inherits": "^2.0.1",
+    "tiny-eventemitter": "^1.2.0"
   },
   "devDependencies": {
     "chai": "^3.3.0",
