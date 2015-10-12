@@ -10,10 +10,12 @@ var PORT = 5151,
     wss = new ws.Server({ port: PORT }),
     landho = require('landho'),
     landho_client = require('../lib'),
-    api = landho()
-    
+    api = landho(),
+    Channel = require('../lib/channel')
+   
+landho.socket(api, wss)
+
 api
-    .configure(landho.socket(wss))
     .service('calc',
     {
         wrong: function (params, done)
@@ -26,25 +28,23 @@ api
             done(null, params.data.a + params.data.b)
         },
         
-        counter: function (params)
+        counter: function (params, done)
         {
-            var counter = 0
-                
-            return {
-                initial: function (done)
-                {
-                    done(null, counter)
-                },
-                changes: function (subscriber, done)
-                {
-                    var interval = setInterval(function ()
-                    {
-                        subscriber.emit('update', ++counter)
-                    }, 1)
-                    
-                    done(null, { close: clearInterval.bind(null, interval) })
-                }
-            }
+            var counter = 0,
+                interval = null,
+                channel = new landho.Channel()
+            
+            channel.on('close', function ()
+            {
+                clearInterval(interval)
+            })
+            
+            interval = setInterval(function ()
+            {
+                channel.emit('update', ++counter)
+            }, 1)
+            
+            done(null, channel)
         }
     })
     
@@ -59,11 +59,11 @@ var get_client = function (done)
     
 describe('Client', function ()
 {
-    it('can call a request/response method', function (done)
+    it('can call a method', function (done)
     {
         get_client(function (client)
         {
-            client('calc add', { a: 4, b: 3 }, function (err, result, feed)
+            client.service('calc')('add', { a: 4, b: 3 }, function (err, result)
             {
                 expect(err).to.be.null
                 expect(result).to.equal(7)
@@ -72,19 +72,17 @@ describe('Client', function ()
         })
     })
     
-    it('can call a feed method', function (done)
+    it('can call a method that returns a channel', function (done)
     {
         get_client(function (client)
         {
-            client('calc counter', {}, function (err, initial, feed)
+            client.service('calc')('counter', {}, function (err, channel)
             {
                 expect(err).to.be.null
-                expect(initial).to.equal(0)
-                expect(feed).to.not.be.undefined
-                expect(feed.on).to.not.be.undefined
+                expect(channel).to.be.instanceof(Channel)
                 
                 var expect_c = 1
-                feed.on('update', function (c)
+                channel.on('update', function (c)
                 {
                     expect(c).to.equal(expect_c)
                     expect_c++
@@ -95,16 +93,9 @@ describe('Client', function ()
                         // update events in the pipe to arrive
                         // before we check to see if the feed
                         // has stopped
-                        feed.close()
-                        setTimeout(function ()
-                        {
-                            var orig_expect_c = expect_c
-                            setTimeout(function ()
-                            {
-                                expect(expect_c).to.equal(orig_expect_c)
-                                done()
-                            }, 10)
-                        }, 10)
+                        channel.close()
+                        done()
+                        expect(client.channels[channel.id]).to.be.undefined
                     }
                 })
             })

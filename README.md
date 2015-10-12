@@ -1,6 +1,6 @@
-# Land Ho!! Socket.IO client
+# landho-client
 
-This is a client for [landho](https://github.com/elishacook/landho) services exposed via a Socket.IO server.
+This is a client for [landho](https://github.com/elishacook/landho) services exposed via a web socket.
 
 ## Install
 
@@ -12,9 +12,9 @@ npm install --save landho-client
 
 ```js
 var landho_client = require('landho-client'),
-    io_client = require('socket.io-client')
+    WebSocket = require('ws')
 
-var socket = io_client.connect('http://0.0.0.0:5000', { transports: ['websocket'] })
+var socket = new WebSocket('http://0.0.0.0:5000')
 socket.on('connect', function ()
 {
     var client = landho_client(socket),
@@ -26,22 +26,22 @@ socket.on('connect', function ()
         console.log(result) // -> 73
     })
     
-    // Calling a feed method
-    foo('counter', { start: 100 }, function (err, result, feed)
+    // Calling a method that returns a channel
+    foo('counter', { start: 100 }, function (err, channel)
     {
         // `result` contains the initial value
         console.log(result) // -> 100
         
-        // Listen to events emitted by the feed
-        feed.on('update', function (c)
+        // Listen to events emitted by the channel
+        channel.on('update', function (c)
         {
             console.log(c) // -> 101...102...103...
         })
         
-        // When you don't want updates anymore, close the feed
+        // When you don't want updates anymore, close the channel
         setTimeout(function ()
         {
-            feed.close()
+            channel.close()
         }, 5000)
     })
 })
