@@ -9,7 +9,7 @@ var PORT = 5151,
     ws = require('ws'),
     wss = new ws.Server({ port: PORT }),
     landho = require('landho'),
-    landho_client = require('../lib'),
+    LandhoClient = require('../lib'),
     api = landho(),
     Channel = require('../lib/channel')
    
@@ -53,7 +53,7 @@ var get_client = function (done)
     var socket = new ws(URL)
     socket.on('open', function ()
     {
-        done(landho_client(socket))
+        done(new LandhoClient(socket))
     })
 }
     
