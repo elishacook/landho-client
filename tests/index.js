@@ -10,8 +10,7 @@ var PORT = 5151,
     wss = new ws.Server({ port: PORT }),
     landho = require('landho'),
     LandhoClient = require('../lib'),
-    api = landho(),
-    Channel = require('../lib/channel')
+    api = landho()
    
 landho.socket(api, wss)
 
@@ -79,7 +78,6 @@ describe('Client', function ()
             client.service('calc')('counter', {}, function (err, channel)
             {
                 expect(err).to.be.null
-                expect(channel).to.be.instanceof(Channel)
                 
                 var expect_c = 1
                 channel.on('update', function (c)
