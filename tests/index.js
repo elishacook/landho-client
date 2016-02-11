@@ -99,4 +99,48 @@ describe('Client', function ()
             })
         })
     })
+    
+    it('returns a promise if no callback is provided', function (done)
+    {
+        get_client(function (client)
+        {
+            client.service('calc')('add', { a: 23, b: 5 })
+                .then(function (result) {
+                    try
+                    {
+                        expect(result).to.equal(28)
+                        done()
+                    }
+                    catch (e)
+                    {
+                        done(e)
+                    }
+                })
+                .catch(done)
+        })
+    })
+    
+    it('returns a rejected promise if no callback is provided and there is an error', function (done)
+    {
+        get_client(function (client)
+        {
+            client.service('calc')('wrong')
+                .then(function (result)
+                {
+                    done('Should not have resolved promise')
+                })
+                .catch(function (e)
+                {
+                    try
+                    {
+                        expect(e.message).to.equal('wrong')
+                        done()
+                    }
+                    catch (e)
+                    {
+                        done(e)
+                    }
+                })
+        })
+    })
 })
