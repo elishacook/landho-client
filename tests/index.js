@@ -143,4 +143,21 @@ describe('Client', function ()
                 })
         })
     })
+    
+    it('fires events at the begining of a call', function (done)
+    {
+        get_client(function (client)
+        {
+            var check = false
+            client.on('call_start', function ()
+            {
+                check = true
+            })
+            client.service('calc')('add', { a: 1, b: 1 }, function ()
+            {
+                expect(check)
+                done()
+            })
+        })
+    })
 })

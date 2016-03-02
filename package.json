@@ -1,6 +1,6 @@
 {
   "name": "landho-client",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "lib/index.js",
   "description": "A socket.io client for landho services.",
   "scripts": {
